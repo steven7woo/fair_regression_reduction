@@ -63,7 +63,7 @@ def train_FairRegression(x, a, y, eps, Theta, learner,
         result = red.expgrad(X, A, Y, learner, dataW=W,
                              cons_class=moments.DP_theta, eps=eps,
                              debug=False, init_cache=init_cache)
-    elif constraint == "QEO":  # QEO constraint
+    elif constraint == "QEO":  # QEO constraint; currently not supported
         result = red.expgrad(X, A, Y, learner, dataW=W,
                              cons_class=moments.QEO, eps=eps, debug=True, init_cache=init_cache)
     else:  # exception
