@@ -24,12 +24,12 @@ import fairclass.red as red
 def train_FairRegression(x, a, y, eps, Theta, learner,
                                 constraint="DP", loss="square", init_cache=[]):
     """
-    First run the fair algorithm on the training set and then record
-    the metrics on thre training set.
+    Run fair algorithm on the training set and then record
+    the metrics on the training set.
 
     x, a, y: the training set input for the fair algorithm
     eps: the desired level of fairness violation
-
+    Theta: the set of thresholds (z's in the paper)
     """
     alpha = (Theta[1] - Theta[0])/2
 
