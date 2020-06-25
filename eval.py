@@ -13,7 +13,7 @@ Output:
 - predictions over the data set
 - weighted loss
 - distribution over the predictions
-- QEO/DP Disparity
+- DP Disparity
 
 TODO: decide the support when we compute disparity
 """
@@ -84,8 +84,6 @@ def evaluate_FairModel(x, a, y, loss, result, Theta):
     # predictions across different groups
     pred_group = extract_group_pred(total_pred, a)
 
-    if _QEO_EVAL:
-        pred_quantile, pred_group_quantile = extract_group_quantile_pred(total_pred, a, y, loss)
 
     weighted_loss_vec = loss_vec(total_pred, y, result_weights, loss)
 
@@ -97,16 +95,6 @@ def evaluate_FairModel(x, a, y, loss, result, Theta):
     PMF_group = [weighted_pmf(pred_group[g], result_weights, Theta) for g in pred_group]
     DP_disp = max([pmf2disp(PMF_g, PMF_all) for PMF_g in PMF_group])
 
-    # QEO disp
-    if _QEO_EVAL:
-        PMF_quantile = {}
-        for q in pred_quantile:
-            PMF_quantile[q] = weighted_pmf(pred_quantile[q], result_weights, Theta)
-
-        PMF_group_quantile = {}
-        for (g, q) in pred_group_quantile:
-                PMF_group_quantile[(g, q)] = weighted_pmf(pred_group_quantile[(g, q)], result_weights, Theta)
-        QEO_disp = max([pmf2disp(PMF_quantile[q], PMF_group_quantile[(g, q)]) for (g, q) in pred_group_quantile])
 
     # TODO: make sure at least one for each subgroup
     evaluation = {}
@@ -117,8 +105,7 @@ def evaluate_FairModel(x, a, y, loss, result, Theta):
     evaluation['disp_std'] = KS_confbdd(n, alpha=0.05)
     evaluation['DP_disp'] = DP_disp
     evaluation['n_oracle_calls'] = result.n_oracle_calls
-    if _QEO_EVAL:
-        evaluation['QEO_disp'] = QEO_disp
+
     return evaluation
 
 
@@ -128,7 +115,7 @@ def eval_BenchmarkModel(x, a, y, model, loss):
     loss function name
     evaluate the following:
     - average loss on the dataset
-    - DP/QEO disp
+    - DP disp
     """
     pred = model(x)  # apply model to get predictions
     n = len(y)
@@ -155,8 +142,6 @@ def eval_BenchmarkModel(x, a, y, model, loss):
     evaluation['disp_std'] = KS_confbdd(n, alpha=0.05)
     evaluation['loss_std'] = loss_std / np.sqrt(n)
 
-    if _QEO_EVAL:
-        evaluation['QEO_disp'] = disp['QEO']
     return evaluation
 
 
@@ -303,7 +288,7 @@ def pred2_disp(pred, a, y, loss):
     y: labels
     loss: loss function names (for quantization)
 
-    Output: the DP and QEO disparity of the predictions
+    Output: the DP disparity of the predictions
 
     TODO: use the union of the predictions as the mesh
     """
@@ -327,20 +312,10 @@ def pred2_disp(pred, a, y, loss):
         PMF_g = histogram_g / sum(histogram_g)
         DP_disp_group[g] = pmf2disp(PMF_all, PMF_g)
 
-    # QEO disparity
-    if _QEO_EVAL:
-        DP_disp_group_quantile = {}
-        for q in quants:
-            histogram_q = get_histogram(pred[y_quant == q], theta_indices)
-            PMF_q = histogram_q / sum(histogram_q)
-        for g in groups:
-            histogram_gq = get_histogram(pred[(a == g) & (y_quant == q)], theta_indices)
-            PMF_gq = histogram_gq / sum(histogram_gq)
-            DP_disp_group_quantile[(g, q)] = pmf2disp(PMF_q, PMF_gq)
+
     disp = {}
     disp['DP'] = max(DP_disp_group.values())
-    if _QEO_EVAL:
-        disp['QEO'] = max(DP_disp_group_quantile.values())
+
     return disp
 
 

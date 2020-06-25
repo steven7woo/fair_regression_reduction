@@ -45,9 +45,7 @@ def augment_data_ab(X, A, Y, Theta):
     theta_list = [s for theta in Theta for s in repeat(theta, n)]
     # Adding theta to the feature
     X_aug['theta'] = pd.Series(theta_list, index=X_aug.index)
-    # Adding quantile to the feature
-    Q_values = pd.concat(repeat(quantization(Y), num_theta))
-    X_aug['quantile'] = Q_values
+
     Y_aug = Y_values >= X_aug['theta']
     Y_aug = Y_aug.map({True: 1, False: 0})
     X_aug.index = range(n * num_theta)
@@ -74,10 +72,6 @@ def augment_data_sq(x, a, y, Theta):
     theta_list = [s for theta in Theta for s in repeat(theta, n)]
     # Adding theta to the feature
     X_aug['theta'] = pd.Series(theta_list, index=X_aug.index)
-    # Adding quantile to the feature
-    Q_values = pd.concat(repeat(quantization(y), num_theta))
-    X_aug['quantile'] = Q_values
-
     X_aug.index = range(n * num_theta)
     # Y_aug.index = range(n * num_theta)
     A_aug.index = range(n * num_theta)
@@ -112,9 +106,6 @@ def augment_data_logistic(x, a, y, Theta):
     theta_list = [s for theta in Theta for s in repeat(theta, n)]
     # Adding theta to the feature
     X_aug['theta'] = pd.Series(theta_list, index=X_aug.index)
-    # Adding quantile to the feature
-    Q_values = pd.concat(repeat(y, num_theta))
-    X_aug['quantile'] = Q_values
 
     X_aug.index = range(n * num_theta)
     A_aug.index = range(n * num_theta)

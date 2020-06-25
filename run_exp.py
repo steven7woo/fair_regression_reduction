@@ -331,7 +331,7 @@ def read_result_list(result_list):
         print(test_performance)
 
 
-"""
+
 # Sample instantiation of running the fair regeression algorithm
 eps_list = [0.275, 0.31, 1] # range of specified disparity values
 
@@ -356,7 +356,7 @@ outfile = open(info+'.pkl','wb')
 pickle.dump(result, outfile)
 outfile.close()
 
-
+"""
 
 
 # Other sample use:

@@ -18,7 +18,6 @@ These solvers serve as our unconstrained benchmark methods.
 """
 
 
-from __future__ import print_function
 
 import functools
 import numpy as np
@@ -26,22 +25,20 @@ import pandas as pd
 import random
 import data_parser as parser
 import data_augment as augment
-from itertools import repeat
 from gurobipy import *
 
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, mean_absolute_error, log_loss
-import matplotlib.pyplot as plt
+
 from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingRegressor, GradientBoostingClassifier
 import xgboost as xgb
 import time
 
-print = functools.partial(print, flush=True)
 
 _LOGISTIC_C = 5  # Constant for rescaled logisitic loss; might have to
                  # change for data_augment
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 
 """
 Oracles for fair regression algorithm
@@ -49,7 +46,7 @@ Oracles for fair regression algorithm
 class SVM_LP_Learner:
     """
     Gurobi based cost-sensitive classification oracle
-    Assume there is a 'theta' and 'quantile' field in the X data frame
+    Assume there is a 'theta' field in the X data frame
     Oracle=CS; Class=linear
     """
     def __init__(self, off_set=0, norm_bdd=1):
@@ -60,11 +57,10 @@ class SVM_LP_Learner:
 
     def fit(self, X, Y, W):
         w = SVM_Gurobi(X, Y, W, self.norm_bdd, self.off_set)
-        self.weights = pd.Series(w, index=list(X.drop(['theta',
-                                                       'quantile'], 1)))
+        self.weights = pd.Series(w, index=list(X.drop(['theta'], 1)))
 
     def predict(self, X):
-        y_values = (X.drop(['theta', 'quantile'],
+        y_values = (X.drop(['theta'],
                            axis=1)).dot(np.array(self.weights))
         pred = 1*(y_values - X['theta'] >= 0)  # w * x - theta
         return pred
@@ -86,7 +82,7 @@ class LeastSquaresLearner:
         self.weights = pd.Series(self.lsqinfo[0], index=list(matX))
 
     def predict(self, X):
-        y_values = (X.drop(['theta', 'quantile'],
+        y_values = (X.drop(['theta'],
                            axis=1)).dot(np.array(self.weights))
         pred = 1*(y_values - X['theta'] >= 0)  # w * x - theta
         return pred
@@ -115,8 +111,7 @@ class LogisticRegressionLearner:
         pred_prob = self.regr.predict_proba(matX)
 
     def predict(self, X):
-        pred_prob = self.regr.predict_proba(X.drop(['theta',
-                                                    'quantile'], axis=1))
+        pred_prob = self.regr.predict_proba(X.drop(['theta'], axis=1))
         prob_values = pd.DataFrame(pred_prob)[1]
         y_values = (np.log(1 / prob_values - 1) / (- _LOGISTIC_C) + 1) / 2
         # y_values = pd.DataFrame(pred_prob)[1]
@@ -140,8 +135,7 @@ class RF_Classifier_Learner:
         self.clf.fit(matX, vecY, sample_weight=vecW)
 
     def predict(self, X):
-        pred_prob = self.clf.predict_proba(X.drop(['theta',
-                                                    'quantile'],
+        pred_prob = self.clf.predict_proba(X.drop(['theta'],
                                                    axis=1))
         y_values = pd.DataFrame(pred_prob)[1]
         pred = 1*(y_values - X['theta'] >= 0)
@@ -167,8 +161,7 @@ class XGB_Classifier_Learner:
         self.clf.fit(matX, vecY, sample_weight=vecW)
 
     def predict(self, X):
-        pred_prob = self.clf.predict_proba(X.drop(['theta',
-                                                   'quantile'],
+        pred_prob = self.clf.predict_proba(X.drop(['theta'],
                                                   axis=1))
         prob_values = pd.DataFrame(pred_prob)[1]
         y_values = (np.log(1 / prob_values - 1) / (- _LOGISTIC_C) + 1) / 2
@@ -191,7 +184,7 @@ class RF_Regression_Learner:
         self.regr.fit(matX, vecY)
 
     def predict(self, X):
-        y_values = self.regr.predict(X.drop(['theta', 'quantile'], axis=1))
+        y_values = self.regr.predict(X.drop(['theta'], axis=1))
         pred = 1*(y_values - X['theta'] >= 0)  # w * x - theta
         return pred
 
@@ -214,7 +207,7 @@ class XGB_Regression_Learner:
         self.regr.fit(matX, vecY)
 
     def predict(self, X):
-        y_values = self.regr.predict(X.drop(['theta', 'quantile'], axis=1))
+        y_values = self.regr.predict(X.drop(['theta'], axis=1))
         pred = 1*(y_values - X['theta'] >= 0)  # w * x - theta
         return pred
 
@@ -222,7 +215,7 @@ class XGB_Regression_Learner:
 def SVM_Gurobi(X, Y, W, norm_bdd, off_set):
     """
     Solving SVM using Gurobi solver
-    X: design matrix with the last two columns being 'theta' and 'quantile'
+    X: design matrix with the last two columns being 'theta'
     A: protected feature
     impose ell_infty constraint over the coefficients
     """
@@ -245,7 +238,7 @@ def SVM_Gurobi(X, Y, W, norm_bdd, off_set):
     t = pd.Series(t)
     m.update()
     for i in range(N):
-        xi = np.array(X.drop(['theta', 'quantile'], 1).iloc[i])
+        xi = np.array(X.drop(['theta'], 1).iloc[i])
         yi = Y_aug.iloc[i]
         theta_i = X['theta'][i]
         # Hinge Loss Constraint
@@ -264,7 +257,7 @@ def approximate_data(X, Y, W, Theta):
     """
     n = int(len(X) / len(Theta))  # size of the dataset
     alpha = (Theta[1] - Theta[0])/2
-    x = X.iloc[:n, :].drop(['theta', 'quantile'], 1)
+    x = X.iloc[:n, :].drop(['theta'], 1)
     pred_vec = Theta + alpha  # the vector of possible preds
 
     minimizer = {}
@@ -295,7 +288,7 @@ def approx_data_logistic(X, Y, W, Theta):
     """
     n = int(len(X) / len(Theta))  # size of the dataset
     alpha = (Theta[1] - Theta[0])/2
-    x = X.iloc[:n, :].drop(['theta', 'quantile'], 1)
+    x = X.iloc[:n, :].drop(['theta'], 1)
 
     pred_vec = {}  # mapping theta to pred vector
     Theta_mid = [0] + list(Theta + alpha) + [1]
