@@ -6,36 +6,19 @@ Input:
 - (x, a, y): training set
 - eps: target training tolerance
 - Theta: the set of Threshold
+- learner: the regression/classification oracle 
+- constraint: for now only handles demographic parity (statistical parity)
+- loss: the loss function
 
 Output:
-distribution over hypotheses
+- a predictive model (a distribution over hypotheses)
+- auxiliary model info
 
-
-Also provide a collection of functions for evaluating the output model.
 """
 
-from __future__ import print_function
-
-import functools
-import numpy as np
-import pandas as pd
-import data_parser as parser
 import data_augment as augment
-import solvers as solvers
-import eval as evaluate
 import fairclass.moments as moments
 import fairclass.red as red
-
-from sklearn import linear_model
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-import matplotlib.pyplot as plt
-import itertools
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import log_loss
-
-print = functools.partial(print, flush=True)
-
-_LOGISTIC_C = 5  # Constant for rescaled logistic loss
 
 
 def train_FairRegression(x, a, y, eps, Theta, learner,
@@ -63,9 +46,6 @@ def train_FairRegression(x, a, y, eps, Theta, learner,
         result = red.expgrad(X, A, Y, learner, dataW=W,
                              cons_class=moments.DP_theta, eps=eps,
                              debug=False, init_cache=init_cache)
-    elif constraint == "QEO":  # QEO constraint; currently not supported
-        result = red.expgrad(X, A, Y, learner, dataW=W,
-                             cons_class=moments.QEO, eps=eps, debug=True, init_cache=init_cache)
     else:  # exception
         raise Exception('Constraint not supported: ', str(constraint))
 
