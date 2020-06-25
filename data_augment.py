@@ -19,16 +19,6 @@ import itertools
 _LOGISTIC_C = 5
 
 
-def quantization(y):
-    """
-    Helper function
-    Takes a y vector as input and output the quantile distribution
-    y: real-valued response vector
-    PRELIM VERSION: only decides whether the y value is above or below the median
-    """
-    med_y = np.median(y)
-    return 1*(y >= med_y)
-
 
 def augment_data_ab(X, A, Y, Theta):
     """
