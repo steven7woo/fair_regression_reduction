@@ -1,7 +1,7 @@
 # Fair Regression: Reduction-Based Algorithms
 
 Implementation for a reduction-based algorithm for fair regression
-subject to the constraint of demographic (or statistical) parity.
+subject to the constraint of demographic parity (also called statistical parity).
 
 
 If you find thie repository useful for your research, please consider
@@ -27,8 +27,6 @@ To run the code the following packages need to be installed:
 - Gurobi solver. Avaiable at: http://www.gurobi.com/index
 - Python package gurobipy. Avaiable with Anaconda: http://conda.anaconda.org/gurobi
 - Python XGB package. This can be installed with "pip install xgboost"
-
-
 
 
 ### Dataset
