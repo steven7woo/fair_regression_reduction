@@ -219,7 +219,7 @@ def SVM_Gurobi(X, Y, W, norm_bdd, off_set):
     A: protected feature
     impose ell_infty constraint over the coefficients
     """
-    d = len(X.columns) - 2  # number of predictive features
+    d = len(X.columns) - 1  # number of predictive features (excluding theta)
     N = X.shape[0]  # number of augmented examples
     m = Model()
     m.setParam('OutputFlag', 0)    
