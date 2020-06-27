@@ -24,8 +24,8 @@ citing our work:
 
 ### Requirements
 To run the code the following packages need to be installed:
-- Gurobi solver. Avaiable at: http://www.gurobi.com/index
-- Python package gurobipy. Avaiable with Anaconda: http://conda.anaconda.org/gurobi
+- [Gurobi solver](http://www.gurobi.com/index).
+- Python package gurobipy. Avaiable with [Anaconda](http://conda.anaconda.org/gurobi).
 - Python XGB package. [Installation guide](https://xgboost.readthedocs.io/en/latest/build.html).
 
 
