@@ -96,17 +96,3 @@ class DP_theta(_CondOpportunity):
         super().__init__(dataX, dataA, dataY,
                          dataX["theta"])
 
-def merge_theta_quantile(dataX):
-    dataGrp = dataX[['theta','quantile']].apply(lambda x : "theta="+str(x['theta']) + " quantile="+str(x['quantile']), axis=1)
-    return dataGrp
-
-
-
-class QEO(_CondOpportunity):
-    """Quantile EO for regression"""
-    short_name = "QEO-reg"
-    def __init__(self, dataX, dataA, dataY):
-        dataGrp = merge_theta_quantile(dataX)
-        super().__init__(dataX, dataA, dataY, dataGrp)
-
-
