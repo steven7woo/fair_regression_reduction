@@ -36,11 +36,6 @@ We include three datasets.
 - Communities and Crime 
 
 
-### Problem Formulation
-```math
-\min_f \ell(f(X), Y)
-```
-
 
 ### Usage
 - To train a fair regression model, run exp_grad.py.
